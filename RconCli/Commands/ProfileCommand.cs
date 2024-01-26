@@ -39,7 +39,7 @@ public class ProfileCommand
         AnsiConsole.Console.PrintProfile(profile);
     }
 
-    [Command("ls", Description = "List all profiles.")]
+    [Command("list", Aliases = ["ls"], Description = "List all profiles. (alias: ls)")]
     public async Task ListAsync(
         [Option('s', Description = "Show passwords in the output.")] bool clear = false)
     {
@@ -47,7 +47,7 @@ public class ProfileCommand
         AnsiConsole.Console.PrintProfiles(profiles, clear);
     }
 
-    [Command("rm", Description = "Remove a profile.")]
+    [Command("remove", Aliases = ["rm"], Description = "Remove a profile. (alias: rm)")]
     public async Task RemoveAsync(
         [Argument("profile name", Description = "The name of the profile.", Order = 0)]
         [CompletionCandidates(typeof(ProfileNameProvider))]

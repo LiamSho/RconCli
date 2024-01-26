@@ -14,7 +14,7 @@ namespace RconCli.Commands;
 [HasSubCommands(typeof(ProfileCommand), "profile", Description = "Manage profiles.")]
 public class RootCommand
 {
-    [Command("connect", Description = "Connect to a server defined in a profile.")]
+    [Command("connect", Aliases = ["c"], Description = "Connect to a server defined in a profile. (alias: c)")]
     public async Task ConnectAsync(
         [Argument("profile name", Description = "The name of the profile.")]
         [CompletionCandidates(typeof(ProfileNameProvider))]
@@ -40,7 +40,7 @@ public class RootCommand
         }
     }
 
-    [Command("direct", Description = "Connect to a server directly.")]
+    [Command("direct", Aliases = ["d", "rcon"], Description = "Connect to a server directly. (alias: d, rcon)")]
     public async Task DirectConnectAsync(
         [Option('H', Description = "Server host. Can be IPv4 address or a hostname that can be resolved to a IPv4 address.")] string host,
         [Option('p', Description = "Server port.")] ushort port,
