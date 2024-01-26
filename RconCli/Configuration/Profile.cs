@@ -19,10 +19,6 @@ public record Profile
     public RconLibrary Library { get; set; } = RconLibrary.RconSharp;
 }
 
-[JsonSourceGenerationOptions(WriteIndented = true, GenerationMode = JsonSourceGenerationMode.Serialization)]
-[JsonSerializable(typeof(Profile[]))]
-public partial class ProfileJsonSerializationContext : JsonSerializerContext;
-
 [JsonSourceGenerationOptions(WriteIndented = true, GenerationMode = JsonSourceGenerationMode.Metadata)]
 [JsonSerializable(typeof(Profile[]))]
 public partial class ProfileJsonMetadataContext : JsonSerializerContext;

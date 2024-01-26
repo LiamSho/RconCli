@@ -137,7 +137,7 @@ public class ProfileManager
     {
         try
         {
-            var json = JsonSerializer.Serialize(profiles.ToArray(), ProfileJsonSerializationContext.Default.ProfileArray);
+            var json = JsonSerializer.Serialize(profiles.ToArray(), ProfileJsonMetadataContext.Default.ProfileArray);
             await File.WriteAllTextAsync(_profileConfigurationFile.FullName, json);
             return null;
         }
