@@ -143,7 +143,7 @@ public static class RconUtils
             table.AddRow($"[bold]::{key}[/]", value);
         }
 
-        table.Title = new TableTitle("RCON CLI shell mode commands");
+        table.Title = new TableTitle("RCON CLI shell mode commands", new Style(Color.Black));
         table.ShowHeaders = true;
 
         AnsiConsole.Write(table);

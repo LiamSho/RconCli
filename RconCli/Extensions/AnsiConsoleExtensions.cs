@@ -33,7 +33,7 @@ public static class AnsiConsoleExtensions
 
         table.AddRow("Description", profile.Description);
 
-        table.Title = new TableTitle("Profile Detail");
+        table.Title = new TableTitle("Profile Detail", new Style(Color.Black));
         table.ShowHeaders = false;
 
         console.Write(table);
@@ -62,7 +62,7 @@ public static class AnsiConsoleExtensions
             table.AddRow(row.ToArray());
         }
 
-        table.Title = new TableTitle("Profile List");
+        table.Title = new TableTitle("Profile List", new Style(Color.Black));
         table.ShowHeaders = true;
 
         console.Write(table);
