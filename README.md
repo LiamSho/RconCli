@@ -14,9 +14,20 @@ dotnet tool install -g AlisaLab.RconCli
 
 Then you can use the tool by running `rcon` command.
 
-## Usage
+## Sample Usages
 
-You can run `rcon --help` to see the usage.
+You can run `rcon --help` to see the help message.
+
+### RCON Library
+
+RconCli use 2 different RCON libraries to communicate with the server:
+
+- [RconSharp](https://github.com/stefanodriussi/rconsharp)
+- [CoreRCON](https://github.com/Challengermode/CoreRcon)
+
+You can change which library to use by command line options or through the interactive RCON shell command.
+
+If the library to use is not specified, RconCli will use `RconSharp` by default.
 
 ### Direct connect
 
@@ -35,7 +46,7 @@ Profile file location:
 
 ```bash
 # Create a profile
-rcon profile add <profile name> -H <hostname or IPv4 address> -p <port> -w <password> -d <description>
+rcon profile add <profile name> -H <hostname or IPv4 address> -p <port> -w <password> -d <description> -e <rcon library>
 
 # Remove a profile
 rcon profile remove <profile name>
@@ -46,6 +57,14 @@ rcon profile list
 # Connect to a profile
 rcon connect <profile name>
 ```
+
+## Third-party libraries
+
+- [RconSharp](https://github.com/stefanodriussi/rconsharp) under `MIT`, for RCON communication
+- [CoreRCON](https://github.com/Challengermode/CoreRcon) under `MIT`, for RCON communication
+- [Cocona.Lite](https://github.com/mayuki/Cocona) under `MIT`, for command line parsing
+- [Spectre.Console](https://github.com/spectreconsole/spectre.console) under `MIT`, for command line UI
+- [SonarAnalyzer.CSharp](https://github.com/SonarSource/sonar-dotnet) under `LGPL-3.0`, for code analysis, not included in the release binary
 
 ## License
 
