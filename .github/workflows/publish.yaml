@@ -1,0 +1,37 @@
+name: publish
+
+on:
+  release:
+    types:
+      - published
+
+defaults:
+  run:
+    shell: "bash"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out"
+        uses: actions/checkout@v4
+
+      - name: "Setup .NET SDK"
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: "Print current version number"
+        run: echo "Current version is ${{ github.event.release.tag_name }}"
+
+      - name: "Restore packages"
+        run: dotnet restore
+
+      - name: "Build"
+        run: dotnet build -c Release --no-restore
+
+      - name: "Pack"
+        run: dotnet pack -c Release --no-build -p:PackageVersion=${{ github.event.release.tag_name }} ./RconCli/RconCli.csproj
+
+      - name: "Publish"
+        run: dotnet nuget push ./nupkg/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
