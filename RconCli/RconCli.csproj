@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Cocona" />
+    <PackageReference Include="CoreRCON" />
+    <PackageReference Include="Spectre.Console" />
+  </ItemGroup>
+
+</Project>
