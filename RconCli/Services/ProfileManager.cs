@@ -48,6 +48,11 @@ public class ProfileManager
         var profiles = await GetProfilesAsync()
             .ToListAsync();
 
+        if (profiles.Exists(x => x.Name == profile.Name))
+        {
+            return new List<string>(["The profile with the same name already existed."]);
+        }
+
         profiles.Add(profile);
         var message = await WriteProfilesAsync(profiles);
 
