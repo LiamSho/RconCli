@@ -17,13 +17,13 @@ public class RconConnection : IDisposable
         _rcon.OnDisconnected += OnDisconnected;
     }
 
-    public async Task<string> SendCommand(string command)
+    public async Task<string> SendCommand(string command, uint timeout = 10)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         await EnsureConnectedAsync();
 
-        return await _rcon.SendCommandAsync(command);
+        return await _rcon.SendCommandAsync(command, TimeSpan.FromSeconds(timeout));
     }
 
     private async Task EnsureConnectedAsync()
@@ -47,7 +47,15 @@ public class RconConnection : IDisposable
         GC.SuppressFinalize(this);
 
         _disposed = true;
-        _rcon.Dispose();
+
+        try
+        {
+            _rcon.Dispose();
+        }
+        catch (Exception)
+        {
+            // Ignored
+        }
 
         GC.ReRegisterForFinalize(this);
     }

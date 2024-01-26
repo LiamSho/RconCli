@@ -12,7 +12,7 @@ namespace RconCli.Utils;
 
 public static class RconUtils
 {
-    public static async Task RunInteractive(Profile profile)
+    public static async Task RunInteractive(Profile profile, uint timeoutInSeconds)
     {
         PrintWelcome();
         PrintHelp();
@@ -21,6 +21,8 @@ public static class RconUtils
 
         AnsiConsole.MarkupLine("RCON client created.");
         AnsiConsole.WriteLine();
+
+        var timeout = timeoutInSeconds;
 
         while (true)
         {
@@ -49,6 +51,17 @@ public static class RconUtils
                         AnsiConsole.MarkupLine("RCON client disposed.");
                         AnsiConsole.WriteLine();
                         return;
+                    case "::info":
+                        PrintInfoTable(profile, timeout);
+                        continue;
+                    case "::help":
+                        PrintHelp();
+                        continue;
+                    case "::timeout":
+                        var seconds = AnsiConsole.Prompt(new TextPrompt<uint>("Enter timeout in seconds: "));
+                        timeout = seconds;
+                        AnsiConsole.WriteLine();
+                        continue;
                     default:
                         AnsiConsole.MarkupLine("Unknown shell command.");
                         AnsiConsole.WriteLine();
@@ -56,20 +69,20 @@ public static class RconUtils
                 }
             }
 
-            await ExecuteCommand(rcon, command);
+            await ExecuteCommand(rcon, command, timeout);
         }
     }
 
-    public static async Task RunSingleShot(Profile profile, string command)
+    public static async Task RunSingleShot(Profile profile, string command, uint timeout)
     {
         var rcon = await profile.CreateConnection();
 
-        await ExecuteCommand(rcon, command);
+        await ExecuteCommand(rcon, command, timeout);
 
         rcon.Dispose();
     }
 
-    private static async Task ExecuteCommand(RconConnection connection, string command)
+    private static async Task ExecuteCommand(RconConnection connection, string command, uint timeout)
     {
         AnsiConsole.WriteLine();
 
@@ -80,15 +93,31 @@ public static class RconUtils
 
         try
         {
-            var result = await connection.SendCommand(command);
+            var result = await connection.SendCommand(command, timeout);
             AnsiConsole.MarkupLine(CultureInfo.InvariantCulture,
                 "{0}[green] [[Results]] [/]{1}",
                 DateTimeOffset.Now.ToString("T", CultureInfo.InvariantCulture),
                 result.EscapeMarkup());
         }
+        catch (TimeoutException e)
+        {
+            AnsiConsole.MarkupLine("Oops! The RCON command timed out.");
+            AnsiConsole.MarkupLine(CultureInfo.InvariantCulture, "  > [red]{0}[/]", e.Message);
+        }
+        catch (SocketException e)
+        {
+            AnsiConsole.MarkupLine("Oops! A socket exception occurred while executing the RCON command.");
+            AnsiConsole.MarkupLine(CultureInfo.InvariantCulture, "  > [red]{0}[/]", e.Message);
+        }
+        catch (ObjectDisposedException e)
+        {
+            AnsiConsole.MarkupLine("Oops! The RCON connection was disposed while executing the RCON command.");
+            AnsiConsole.MarkupLine("This is not possible to happen. Try to exit and restart the RCON shell.");
+            AnsiConsole.WriteException(e);
+        }
         catch (Exception e)
         {
-            AnsiConsole.MarkupLine("Oops! RCON command execution threw an exception.");
+            AnsiConsole.MarkupLine("Oops! RCON command execution threw an unknown exception.");
             AnsiConsole.WriteException(e);
         }
 
@@ -131,7 +160,10 @@ public static class RconUtils
     {
         var commands = new Dictionary<string, string>
         {
-            { "exit", "Exit the RCON shell." }
+            { "exit", "Exit the RCON shell." },
+            { "info", "Show connection information" },
+            { "help", "Print this help message" },
+            { "timeout", "Set the command timeout in seconds. (Default is 10)" }
         };
 
         var table = new Table();
@@ -168,6 +200,20 @@ public static class RconUtils
 
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("Entering RCON shell mode.");
+        AnsiConsole.WriteLine();
+    }
+
+    private static void PrintInfoTable(Profile profile, uint timeout)
+    {
+        var infoTable = new Table();
+        infoTable.AddColumns("Property", "Value");
+        infoTable.AddRow("Profile", profile.Name);
+        infoTable.AddRow("Description", profile.Description);
+        infoTable.AddRow("Host", profile.Host);
+        infoTable.AddRow("Port", profile.Port.ToString(CultureInfo.InvariantCulture));
+        infoTable.AddRow("Timeout", timeout.ToString(CultureInfo.InvariantCulture));
+        infoTable.ShowHeaders = false;
+        AnsiConsole.Write(infoTable);
         AnsiConsole.WriteLine();
     }
 }

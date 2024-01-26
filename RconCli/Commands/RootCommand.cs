@@ -17,7 +17,8 @@ public class RootCommand
         [Argument("profile name", Description = "The name of the profile.")]
         [CompletionCandidates(typeof(ProfileNameProvider))]
         string name,
-        [Option('c', Description = "Execute the command and exit.")] string? command = null)
+        [Option('c', Description = "Execute the command and exit.")] string? command = null,
+        [Option('t', Description = "Timeout in seconds.")] uint timeout = 10)
     {
         var profile = await ProfileManager.Instance.GetProfileAsync(name);
 
@@ -29,11 +30,11 @@ public class RootCommand
 
         if (command is null)
         {
-            await RconUtils.RunInteractive(profile);
+            await RconUtils.RunInteractive(profile, timeout);
         }
         else
         {
-            await RconUtils.RunSingleShot(profile, command);
+            await RconUtils.RunSingleShot(profile, command, timeout);
         }
     }
 
@@ -42,7 +43,8 @@ public class RootCommand
         [Option('H', Description = "Server host. Can be IPv4 address or a hostname that can be resolved to a IPv4 address.")] string host,
         [Option('p', Description = "Server port.")] ushort port,
         [Option('w', Description = "Server password.")] string password,
-        [Option('c', Description = "Execute the command and exit.")] string? command = null)
+        [Option('c', Description = "Execute the command and exit.")] string? command = null,
+        [Option('t', Description = "Timeout in seconds.")] uint timeout = 10)
     {
         var profile = new Profile
         {
@@ -63,11 +65,11 @@ public class RootCommand
 
         if (command is null)
         {
-            await RconUtils.RunInteractive(profile);
+            await RconUtils.RunInteractive(profile, timeout);
         }
         else
         {
-            await RconUtils.RunSingleShot(profile, command);
+            await RconUtils.RunSingleShot(profile, command, timeout);
         }
     }
 }
