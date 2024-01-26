@@ -18,14 +18,14 @@ public static class RconUtils
 
         var rcon = await profile.CreateConnection();
 
-        AnsiConsole.MarkupLine("RCON client created.");
+        AnsiConsole.Console.MarkupLineWithTime("RCON client created.");
         AnsiConsole.WriteLine();
 
         var timeout = timeoutInSeconds;
 
         while (true)
         {
-            var command = AnsiConsole.Prompt(new TextPrompt<string>("[red][[Command]] [/]"));
+            var command = AnsiConsole.Prompt(new TextPrompt<string>("[blue][[Command]] [/]"));
 
             var isShellCommand = false;
 
@@ -47,7 +47,7 @@ public static class RconUtils
                 {
                     case "::exit":
                         rcon.Dispose();
-                        AnsiConsole.MarkupLine("RCON client disposed.");
+                        AnsiConsole.Console.MarkupLineWithTime("RCON client disposed.");
                         AnsiConsole.WriteLine();
                         return;
                     case "::info":
@@ -62,7 +62,7 @@ public static class RconUtils
                         AnsiConsole.WriteLine();
                         continue;
                     default:
-                        AnsiConsole.MarkupLine("Unknown shell command.");
+                        AnsiConsole.Console.MarkupLineWithTime("Unknown shell command.");
                         AnsiConsole.WriteLine();
                         continue;
                 }
@@ -85,38 +85,36 @@ public static class RconUtils
     {
         AnsiConsole.WriteLine();
 
-        AnsiConsole.MarkupLine(CultureInfo.InvariantCulture,
-            "{0}[red] [[Command]] [/]{1}",
-            DateTimeOffset.Now.ToString("T", CultureInfo.InvariantCulture),
+        AnsiConsole.Console.MarkupLineWithTime(
+            "[blue][[Client]] [/]{1}",
             command.EscapeMarkup());
 
         try
         {
             var result = await connection.SendCommand(command, timeout);
-            AnsiConsole.MarkupLine(CultureInfo.InvariantCulture,
-                "{0}[green] [[Results]] [/]{1}",
-                DateTimeOffset.Now.ToString("T", CultureInfo.InvariantCulture),
+            AnsiConsole.Console.MarkupLineWithTime(
+                "[green][[Server]] [/]{1}",
                 result.EscapeMarkup());
         }
         catch (TimeoutException e)
         {
-            AnsiConsole.MarkupLine("Oops! The RCON command timed out.");
-            AnsiConsole.MarkupLine(CultureInfo.InvariantCulture, "  > [red]{0}[/]", e.Message);
+            AnsiConsole.Console.MarkupLineWithTime("[red][[Errors]] [/]Oops! The RCON command timed out.");
+            AnsiConsole.Console.PrintError(e.Message);
         }
         catch (SocketException e)
         {
-            AnsiConsole.MarkupLine("Oops! A socket exception occurred while executing the RCON command.");
-            AnsiConsole.MarkupLine(CultureInfo.InvariantCulture, "  > [red]{0}[/]", e.Message);
+            AnsiConsole.Console.MarkupLineWithTime("[red][[Errors]] [/]Oops! A socket exception occurred while executing the RCON command.");
+            AnsiConsole.Console.PrintError(e.Message);
         }
         catch (ObjectDisposedException e)
         {
-            AnsiConsole.MarkupLine("Oops! The RCON connection was disposed while executing the RCON command.");
-            AnsiConsole.MarkupLine("This is not possible to happen. Try to exit and restart the RCON shell.");
+            AnsiConsole.Console.MarkupLineWithTime("[red][[Errors]] [/]Oops! The RCON connection was disposed while executing the RCON command.");
+            AnsiConsole.Console.MarkupLineWithTime("[red][[Errors]] [/]This is not possible to happen. Try to exit and restart the RCON shell.");
             AnsiConsole.WriteException(e);
         }
         catch (Exception e)
         {
-            AnsiConsole.MarkupLine("Oops! RCON command execution threw an unknown exception.");
+            AnsiConsole.Console.MarkupLineWithTime("[red][[Errors]] [/]Oops! RCON command execution threw an unknown exception.");
             AnsiConsole.WriteException(e);
         }
 
@@ -146,8 +144,8 @@ public static class RconUtils
 
             ip = ipv4Addresses[0];
 
-            AnsiConsole.MarkupLine(CultureInfo.InvariantCulture,
-                "Resolved host [bold]'{0}'[/] to [bold]'{1}'[/].",
+            AnsiConsole.Console.MarkupLineWithTime(
+                "Resolved host [bold]'{1}'[/] to [bold]'{2}'[/].",
                 profile.Host.EscapeMarkup(),
                 ip.ToString().EscapeMarkup());
         }
@@ -159,25 +157,17 @@ public static class RconUtils
     {
         var commands = new Dictionary<string, string>
         {
-            { "exit", "Exit the RCON shell." },
-            { "info", "Show connection information" },
-            { "help", "Print this help message" },
-            { "timeout", "Set the command timeout in seconds. (Default is 10)" }
+            { "[bold]::exit[/]", "Exit the RCON shell." },
+            { "[bold]::info[/]", "Show connection information" },
+            { "[bold]::help[/]", "Print this help message" },
+            { "[bold]::timeout[/]", "Set the command timeout in seconds. (Default is 10)" }
         };
 
-        var table = new Table();
-
-        table.AddColumns("Command", "Description");
-
-        foreach (var (key, value) in commands)
-        {
-            table.AddRow($"[bold]::{key}[/]", value);
-        }
-
-        table.Title = new TableTitle("RCON CLI shell mode commands", new Style(Color.Black));
-        table.ShowHeaders = true;
-
-        AnsiConsole.Write(table);
+        AnsiConsole.Console.PrintDictionary(
+            "RCON CLI shell mode commands",
+            "Command",
+            "Description",
+            commands);
 
         AnsiConsole.MarkupLine("If your RCON command conflicts with a shell command, prefix it with [bold]'$'[/].");
         AnsiConsole.MarkupLine("  > [bold]'::exit'[/] will be interpreted as a shell command [bold]'::exit'[/] and be executed.");
@@ -198,15 +188,17 @@ public static class RconUtils
 
     private static void PrintInfoTable(Profile profile, uint timeout)
     {
-        var infoTable = new Table();
-        infoTable.AddColumns("Property", "Value");
-        infoTable.AddRow("Profile", profile.Name);
-        infoTable.AddRow("Description", profile.Description);
-        infoTable.AddRow("Host", profile.Host);
-        infoTable.AddRow("Port", profile.Port.ToString(CultureInfo.InvariantCulture));
-        infoTable.AddRow("Timeout", timeout.ToString(CultureInfo.InvariantCulture));
-        infoTable.ShowHeaders = false;
-        AnsiConsole.Write(infoTable);
+        var infos = new Dictionary<string, string>
+        {
+            { "Profile", profile.Name },
+            { "Description", profile.Description },
+            { "Host", profile.Host },
+            { "Port", profile.Port.ToString(CultureInfo.InvariantCulture) },
+            { "Timeout", timeout.ToString(CultureInfo.InvariantCulture) }
+        };
+
+        AnsiConsole.Console.PrintDictionary("RCON connection info", infos);
+
         AnsiConsole.WriteLine();
     }
 }

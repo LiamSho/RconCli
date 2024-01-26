@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
 using Spectre.Console;
 using Profile = RconCli.Configuration.Profile;
@@ -9,33 +10,71 @@ public static class AnsiConsoleExtensions
 {
     public static void PrintErrors(this IAnsiConsole console, IEnumerable<string> errors)
     {
-        console.MarkupLine("[red]Oops! Something went wrong.[/]");
+        console.MarkupLine("Oops! Something went wrong.");
 
         foreach (var error in errors)
         {
-            console.MarkupLine($"> [red]{error}[/]");
+            console.PrintError(error);
         }
+    }
+
+    public static void PrintError(this IAnsiConsole console, object error)
+    {
+        console.MarkupLine(CultureInfo.InvariantCulture, "  > [red]{0}[/]", error);
+    }
+
+    [SuppressMessage("Minor Code Smell", "S3878:Arrays should not be created for params parameters")]
+    public static void MarkupLineWithTime(this IAnsiConsole console, string format, params object[] args)
+    {
+        console.MarkupLine(CultureInfo.InvariantCulture,
+            "{0} " + format,
+            [DateTimeOffset.Now.ToString("T", CultureInfo.InvariantCulture), ..args]);
+    }
+
+    public static void MarkupLineWithTime(this IAnsiConsole console, object message)
+    {
+        console.MarkupLine(CultureInfo.InvariantCulture,
+            "{0} {1}",
+            DateTimeOffset.Now.ToString("T", CultureInfo.InvariantCulture),
+            message);
     }
 
     public static void PrintProfile(this IAnsiConsole console, Profile profile, bool includePassword = false)
     {
-        var table = new Table();
-
-        table.AddColumns("Parameter", "Value");
-
-        table.AddRow("Name", profile.Name);
-        table.AddRow("Host", profile.Host);
-        table.AddRow("Port", profile.Port.ToString(CultureInfo.InvariantCulture));
+        var dictionary = new Dictionary<string, string>
+        {
+            { "Name", profile.Name },
+            { "Host", profile.Host },
+            { "Port", profile.Port.ToString(CultureInfo.InvariantCulture) },
+        };
 
         if (includePassword)
         {
-            table.AddRow("Password", profile.Password);
+            dictionary.Add("Password", profile.Password);
         }
 
-        table.AddRow("Description", profile.Description);
+        dictionary.Add("Description", profile.Description);
 
-        table.Title = new TableTitle("Profile Detail", new Style(Color.Black));
-        table.ShowHeaders = false;
+        console.PrintDictionary("Profile Detail", dictionary);
+    }
+
+    public static void PrintDictionary(this IAnsiConsole console, string title, IDictionary<string, string> dictionary)
+    {
+        console.PrintDictionary(title, "Property", "Value", dictionary);
+    }
+
+    public static void PrintDictionary(this IAnsiConsole console, string title, string keyTitle, string valueTitle, IDictionary<string, string> dictionary)
+    {
+        var table = new Table();
+
+        table.AddColumns(keyTitle, valueTitle);
+
+        foreach (var (key, value) in dictionary)
+        {
+            table.AddRow(key, value);
+        }
+
+        table.Title = new TableTitle(title, new Style(Color.Black));
 
         console.Write(table);
     }
@@ -64,7 +103,6 @@ public static class AnsiConsoleExtensions
         }
 
         table.Title = new TableTitle("Profile List", new Style(Color.Black));
-        table.ShowHeaders = true;
 
         console.Write(table);
     }

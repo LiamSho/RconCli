@@ -81,7 +81,7 @@ public class ProfileManager
 
         if (existingProfile is null)
         {
-            return new List<string> { $"Profile with name {profile.Name} does not exist" };
+            return new List<string> { $"Profile with name '{profile.Name}' does not exist" };
         }
 
         var validationResult = profile.Validate();
@@ -112,7 +112,7 @@ public class ProfileManager
 
         if (existingProfile is null)
         {
-            return $"Profile with name {name} does not exist";
+            return $"Profile with name '{name}' does not exist";
         }
 
         profiles.Remove(existingProfile);
