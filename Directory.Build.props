@@ -34,7 +34,6 @@
     <!-- Assembly Meta -->
     <PropertyGroup>
         <Authors>Alisa</Authors>
-        <Company>Alisa Lab</Company>
         <Copyright>Copyright © 2024 Alisa and Contributors.</Copyright>
         <Description>A CLI tool to use RCON, a game server management protocol.</Description>
         <RepositoryType>git</RepositoryType>
