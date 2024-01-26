@@ -1,9 +1,5 @@
 ﻿using System.Net;
 using CoreRCON;
-using CoreRCON.PacketFormats;
-using RconCli.Configuration;
-using RconCli.Exceptions;
-using RconCli.Extensions;
 
 namespace RconCli.Services;
 
@@ -14,23 +10,9 @@ public class RconConnection : IDisposable
     private bool _disposed;
     private bool _isConnected;
 
-    public RconConnection(Profile profile)
+    public RconConnection(IPAddress ip, ushort port, string password)
     {
-        var host = profile.Host;
-
-        IPAddress ip;
-        if (host.IsIpV4Address())
-        {
-            ip = IPAddress.Parse(host);
-        }
-        else
-        {
-            var address = Dns.GetHostAddresses(host).FirstOrDefault()
-                          ?? throw new DnsResolveException(host);
-            ip = address;
-        }
-
-        _rcon = new RCON(ip, profile.Port, profile.Password);
+        _rcon = new RCON(ip, port, password);
 
         _rcon.OnDisconnected += OnDisconnected;
     }

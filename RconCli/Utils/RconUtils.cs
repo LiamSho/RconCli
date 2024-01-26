@@ -1,4 +1,8 @@
 ﻿using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
+using RconCli.Exceptions;
+using RconCli.Extensions;
 using RconCli.Services;
 using Spectre.Console;
 using Profile = RconCli.Configuration.Profile;
@@ -11,7 +15,7 @@ public static class RconUtils
     {
         PrintHelp();
 
-        var rcon = new RconConnection(profile);
+        var rcon = await profile.CreateConnection();
 
         AnsiConsole.WriteLine("RCON client created.");
 
@@ -34,7 +38,7 @@ public static class RconUtils
 
     public static async Task RunSingleShot(Profile profile, string command)
     {
-        var rcon = new RconConnection(profile);
+        var rcon = await profile.CreateConnection();
 
         await ExecuteCommand(rcon, command);
 
@@ -61,6 +65,38 @@ public static class RconUtils
             AnsiConsole.MarkupLine("Oops! RCON command execution threw an exception.");
             AnsiConsole.WriteException(e);
         }
+    }
+
+    private static async Task<RconConnection> CreateConnection(this Profile profile)
+    {
+        IPAddress ip;
+
+        if (profile.Host.IsIPv4Address())
+        {
+            ip = IPAddress.Parse(profile.Host);
+        }
+        else
+        {
+            var addresses = await Dns.GetHostAddressesAsync(profile.Host);
+
+            var ipv4Addresses = addresses
+                .Where(x => x.AddressFamily == AddressFamily.InterNetwork)
+                .ToArray();
+
+            if (ipv4Addresses.Length == 0)
+            {
+                throw new DnsResolveException($"Could not resolve host '{profile.Host}' to an IPv4 address.");
+            }
+
+            ip = ipv4Addresses[0];
+
+            AnsiConsole.MarkupLine(CultureInfo.InvariantCulture,
+                "Resolved host [bold]'{0}'[/] to [bold]'{1}'[/].",
+                profile.Host.EscapeMarkup(),
+                ip.ToString().EscapeMarkup());
+        }
+
+        return new RconConnection(ip, profile.Port, profile.Password);
     }
 
     private static void PrintHelp()
