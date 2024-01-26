@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
-using OneOf;
 using RconCli.Configuration;
 using RconCli.Extensions;
+using RconCli.Models;
 using RconCli.Utils;
 
 namespace RconCli.Services;
@@ -36,7 +36,7 @@ public class ProfileManager
         }
     }
 
-    public async Task<OneOf<Profile, List<string>>> CreateProfileAsync(Profile profile)
+    public async Task<Result<Profile, List<string>>> CreateProfileAsync(Profile profile)
     {
         var validationResult = profile.Validate();
 
@@ -72,7 +72,7 @@ public class ProfileManager
         return profiles.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
     }
 
-    public async Task<OneOf<Profile, List<string>>> UpdateProfileAsync(Profile profile)
+    public async Task<Result<Profile, List<string>>> UpdateProfileAsync(Profile profile)
     {
         var profiles = await GetProfilesAsync()
             .ToListAsync();
@@ -103,7 +103,7 @@ public class ProfileManager
         return new List<string> { message };
     }
 
-    public async Task<OneOf<Profile, string>> RemoveProfileAsync(string name)
+    public async Task<Result<Profile, string>> RemoveProfileAsync(string name)
     {
         var profiles = await GetProfilesAsync()
             .ToListAsync();

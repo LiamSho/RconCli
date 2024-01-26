@@ -32,9 +32,9 @@ public class ProfileCommand
 
         var result = await ProfileManager.Instance.CreateProfileAsync(profile);
 
-        if (result.IsT1)
+        if (result.IsFailed)
         {
-            AnsiConsole.Console.PrintErrors(result.AsT1);
+            AnsiConsole.Console.PrintErrors(result.AsFailed());
             return;
         }
 
@@ -58,14 +58,14 @@ public class ProfileCommand
     {
         var result = await ProfileManager.Instance.RemoveProfileAsync(name);
 
-        if (result.IsT1)
+        if (result.IsFailed)
         {
-            AnsiConsole.Console.PrintErrors([result.AsT1]);
+            AnsiConsole.Console.PrintErrors([result.AsFailed()]);
             return;
         }
 
         AnsiConsole.MarkupLine($"[green]Profile '{name}' removed successfully.[/]");
-        AnsiConsole.Console.PrintProfile(result.AsT0);
+        AnsiConsole.Console.PrintProfile(result.AsSuccess());
     }
 
     [Command("edit", Description = "Edit a profile.")]
@@ -95,13 +95,13 @@ public class ProfileCommand
 
         var result = await ProfileManager.Instance.UpdateProfileAsync(existingProfile);
 
-        if (result.IsT1)
+        if (result.IsFailed)
         {
-            AnsiConsole.Console.PrintErrors(result.AsT1);
+            AnsiConsole.Console.PrintErrors(result.AsFailed());
             return;
         }
 
         AnsiConsole.MarkupLine($"[green]Profile '{name}' updated successfully.[/]");
-        AnsiConsole.Console.PrintProfile(result.AsT0, password is not null);
+        AnsiConsole.Console.PrintProfile(result.AsSuccess(), password is not null);
     }
 }
