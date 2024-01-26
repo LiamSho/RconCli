@@ -4,6 +4,25 @@
         <OutputType>Exe</OutputType>
     </PropertyGroup>
   
+  <PropertyGroup>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>rcon</ToolCommandName>
+    <PackageOutputPath>../nupkg</PackageOutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>AlisaLab.RconCli</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/LiamSho/RconCli</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>rcon;cli</PackageTags>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="../LICENSE" Pack="true" PackagePath="/" />
+    <None Include="../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Cocona.Lite" />
     <PackageReference Include="CoreRCON" />
