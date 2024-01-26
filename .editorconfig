@@ -168,6 +168,7 @@ csharp_style_prefer_primary_constructors = false:suggestion
 
 # Custom Diagnostic Rules
 
+dotnet_diagnostic.CA1031.severity = silent
 dotnet_diagnostic.CA1805.severity = warning
 dotnet_diagnostic.CA1000.severity = silent
 dotnet_diagnostic.CA1711.severity = silent

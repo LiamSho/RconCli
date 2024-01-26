@@ -5,8 +5,9 @@
     </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Cocona" />
+    <PackageReference Include="Cocona.Lite" />
     <PackageReference Include="CoreRCON" />
+    <PackageReference Include="OneOf" />
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 

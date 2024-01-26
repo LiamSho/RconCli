@@ -1,3 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿using Cocona;
+using RconCli.Commands;
 
-Console.WriteLine("Hello, World!");
+CoconaLiteApp.Run<RootCommand>(configureOptions: options =>
+{
+    options.EnableShellCompletionSupport = true;
+});
