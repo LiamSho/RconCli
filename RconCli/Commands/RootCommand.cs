@@ -1,4 +1,6 @@
-﻿using Cocona;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
+using Cocona;
 using Cocona.ShellCompletion.Candidate;
 using RconCli.Extensions;
 using RconCli.Providers;
@@ -39,7 +41,7 @@ public class RootCommand
     }
 
     [Command("direct", Description = "Connect to a server directly.")]
-    public async Task ConnectAsync(
+    public async Task DirectConnectAsync(
         [Option('H', Description = "Server host. Can be IPv4 address or a hostname that can be resolved to a IPv4 address.")] string host,
         [Option('p', Description = "Server port.")] ushort port,
         [Option('w', Description = "Server password.")] string password,
@@ -71,5 +73,18 @@ public class RootCommand
         {
             await RconUtils.RunSingleShot(profile, command, timeout);
         }
+    }
+
+    [Command("info", Description = "Display RCON CLI info.")]
+    public void InfoAsync()
+    {
+        AnsiConsole.Console.PrintFiglet();
+
+        AnsiConsole.WriteLine();
+
+        var appDataDirectory = PathUtils.GetAppDataDirectory();
+
+        AnsiConsole.MarkupLine(CultureInfo.InvariantCulture, "Runtime: [bold]{0}[/]", RuntimeInformation.FrameworkDescription);
+        AnsiConsole.MarkupLine($"Application data directory: [bold]{appDataDirectory}[/]");
     }
 }

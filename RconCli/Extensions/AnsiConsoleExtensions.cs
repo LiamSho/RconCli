@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Reflection;
 using Spectre.Console;
 using Profile = RconCli.Configuration.Profile;
 
@@ -66,5 +67,22 @@ public static class AnsiConsoleExtensions
         table.ShowHeaders = true;
 
         console.Write(table);
+    }
+
+    public static void PrintFiglet(this IAnsiConsole console)
+    {
+        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "unknown";
+
+        console.Write(new FigletText("RCON CLI"));
+        console.MarkupLine(
+            CultureInfo.InvariantCulture,
+            "Welcome to the RCON CLI v{0}",
+            version.EscapeMarkup());
+
+        console.WriteLine();
+
+        console.MarkupLine("RCON CLI is an Open Source project licensed under the MIT license.");
+        console.MarkupLine("Source code is available at: [link]https://github.com/LiamSho/RconCli[/]");
+        console.MarkupLine("License information is available at: [link]https://github.com/LiamSho/RconCli/blob/main/LICENSE[/]");
     }
 }

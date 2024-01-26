@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
 using RconCli.Exceptions;
 using RconCli.Extensions;
 using RconCli.Services;
@@ -190,13 +189,7 @@ public static class RconUtils
 
     private static void PrintWelcome()
     {
-        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "unknown";
-
-        AnsiConsole.Write(new FigletText("RCON CLI"));
-        AnsiConsole.MarkupLine(
-            CultureInfo.InvariantCulture,
-            "Welcome to the RCON CLI v{0}",
-            version.EscapeMarkup());
+        AnsiConsole.Console.PrintFiglet();
 
         AnsiConsole.WriteLine();
         AnsiConsole.MarkupLine("Entering RCON shell mode.");
