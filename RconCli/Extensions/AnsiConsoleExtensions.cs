@@ -46,6 +46,7 @@ public static class AnsiConsoleExtensions
             { "Name", profile.Name },
             { "Host", profile.Host },
             { "Port", profile.Port.ToString(CultureInfo.InvariantCulture) },
+            { "Library", profile.Library.ToString() }
         };
 
         if (includePassword)
@@ -83,20 +84,28 @@ public static class AnsiConsoleExtensions
     {
         var table = new Table();
 
-        var columns = new List<string> { "Name", "Host", "Port", "Password", "Description" };
+        var columns = new List<string> { "Name", "Host", "Port", "Library", "Password", "Description" };
         if (includePassword is false)
         {
-            columns.Remove("Password");
+            columns.RemoveAt(4);
         }
 
         table.AddColumns(columns.ToArray());
 
         foreach (var profile in profiles)
         {
-            var row = new List<string> { profile.Name, profile.Host, profile.Port.ToString(CultureInfo.InvariantCulture), profile.Password, profile.Description };
+            var row = new List<string>
+            {
+                profile.Name,
+                profile.Host,
+                profile.Port.ToString(CultureInfo.InvariantCulture),
+                profile.Library.ToString(),
+                profile.Password,
+                profile.Description
+            };
             if (includePassword is false)
             {
-                row.RemoveAt(3);
+                row.RemoveAt(4);
             }
 
             table.AddRow(row.ToArray());

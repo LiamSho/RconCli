@@ -1,5 +1,6 @@
 ﻿using Cocona;
 using Cocona.ShellCompletion.Candidate;
+using RconCli.Enums;
 using RconCli.Extensions;
 using RconCli.Providers;
 using RconCli.Services;
@@ -16,6 +17,7 @@ public class ProfileCommand
         [Option('H', Description = "Server host. Can be IPv4 address or a hostname that can be resolved to a IPv4 address.")] string host,
         [Option('p', Description = "Server port.")] ushort port,
         [Option('w', Description = "Server password.")] string password,
+        [Option('e', Description = "RCON library to use.")] RconLibrary library = RconLibrary.RconSharp,
         [Option('d', Description = "Description message.")] string? description = null)
     {
         var profile = new Profile
@@ -24,6 +26,7 @@ public class ProfileCommand
             Host = host,
             Port = port,
             Password = password,
+            Library = library,
             Description = description ?? string.Empty
         };
 
@@ -73,6 +76,7 @@ public class ProfileCommand
         [Option('H', Description = "Server host. Can be IPv4 address or a hostname that can be resolved to a IPv4 address.")] string? host = null,
         [Option('p', Description = "Server port.")] ushort? port = null,
         [Option('w', Description = "Server password.")] string? password = null,
+        [Option('e', Description = "RCON library to use.")] RconLibrary? library = null,
         [Option('d', Description = "Description message.")] string? description = null)
     {
         var existingProfile = await ProfileManager.Instance.GetProfileAsync(name);
@@ -86,6 +90,7 @@ public class ProfileCommand
         existingProfile.Host = host ?? existingProfile.Host;
         existingProfile.Port = port ?? existingProfile.Port;
         existingProfile.Password = password ?? existingProfile.Password;
+        existingProfile.Library = library ?? existingProfile.Library;
         existingProfile.Description = description ?? existingProfile.Description;
 
         var result = await ProfileManager.Instance.UpdateProfileAsync(existingProfile);

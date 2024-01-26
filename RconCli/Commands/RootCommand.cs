@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using Cocona;
 using Cocona.ShellCompletion.Candidate;
+using RconCli.Enums;
 using RconCli.Extensions;
 using RconCli.Providers;
 using RconCli.Services;
@@ -20,6 +21,7 @@ public class RootCommand
         [CompletionCandidates(typeof(ProfileNameProvider))]
         string name,
         [Option('c', Description = "Execute the command and exit.")] string? command = null,
+        [Option('m', Description = "Enable RCON Multi-Packet response mode.")] bool multiPacket = false,
         [Option('t', Description = "Timeout in seconds.")] uint timeout = 10)
     {
         var profile = await ProfileManager.Instance.GetProfileAsync(name);
@@ -32,11 +34,11 @@ public class RootCommand
 
         if (command is null)
         {
-            await RconUtils.RunInteractive(profile, timeout);
+            await RconUtils.RunInteractive(profile, timeout, multiPacket);
         }
         else
         {
-            await RconUtils.RunSingleShot(profile, command, timeout);
+            await RconUtils.RunSingleShot(profile, command, timeout, multiPacket);
         }
     }
 
@@ -46,6 +48,8 @@ public class RootCommand
         [Option('p', Description = "Server port.")] ushort port,
         [Option('w', Description = "Server password.")] string password,
         [Option('c', Description = "Execute the command and exit.")] string? command = null,
+        [Option('e', Description = "RCON library to use.")] RconLibrary library = RconLibrary.RconSharp,
+        [Option('m', Description = "Enable RCON Multi-Packet response mode.")] bool multiPacket = false,
         [Option('t', Description = "Timeout in seconds.")] uint timeout = 10)
     {
         var profile = new Profile
@@ -54,6 +58,7 @@ public class RootCommand
             Host = host,
             Port = port,
             Password = password,
+            Library = library,
             Description = string.Empty
         };
 
@@ -67,11 +72,11 @@ public class RootCommand
 
         if (command is null)
         {
-            await RconUtils.RunInteractive(profile, timeout);
+            await RconUtils.RunInteractive(profile, timeout, multiPacket);
         }
         else
         {
-            await RconUtils.RunSingleShot(profile, command, timeout);
+            await RconUtils.RunSingleShot(profile, command, timeout, multiPacket);
         }
     }
 

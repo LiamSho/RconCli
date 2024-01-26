@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
+using RconCli.Abstract;
+using RconCli.Enums;
 using RconCli.Exceptions;
 using RconCli.Extensions;
 using RconCli.Services;
@@ -11,17 +13,19 @@ namespace RconCli.Utils;
 
 public static class RconUtils
 {
-    public static async Task RunInteractive(Profile profile, uint timeoutInSeconds)
+    public static async Task RunInteractive(Profile profile, uint timeoutInSeconds = 10, bool isMultiPacketResponse = false)
     {
         PrintWelcome();
         PrintHelp();
 
-        var rcon = await profile.CreateConnection();
+        var timeout = timeoutInSeconds;
+        var multiPacket = isMultiPacketResponse;
+        var rconLibrary = profile.Library;
+
+        var rcon = await profile.CreateConnection(timeout, multiPacket, rconLibrary);
 
         AnsiConsole.Console.MarkupLineWithTime("RCON client created.");
         AnsiConsole.WriteLine();
-
-        var timeout = timeoutInSeconds;
 
         while (true)
         {
@@ -51,15 +55,38 @@ public static class RconUtils
                         AnsiConsole.WriteLine();
                         return;
                     case "::info":
-                        PrintInfoTable(profile, timeout);
+                        PrintInfoTable(profile, timeout, multiPacket, rconLibrary);
                         continue;
                     case "::help":
                         PrintHelp();
                         continue;
                     case "::timeout":
-                        var seconds = AnsiConsole.Prompt(new TextPrompt<uint>("Enter timeout in seconds: "));
+                        var seconds = AnsiConsole.Ask("Enter timeout in seconds: ", timeout);
                         timeout = seconds;
+                        await rcon.SetTimeout(timeout);
                         AnsiConsole.WriteLine();
+                        continue;
+                    case "::multipacket":
+                        var isMultiPacket = AnsiConsole.Ask("Enable Multi-Packet response?", isMultiPacketResponse);
+                        multiPacket = isMultiPacket;
+                        await rcon.SetMultiPacketResponse(multiPacket);
+                        AnsiConsole.WriteLine();
+                        continue;
+                    case "::engine":
+                        var engine = AnsiConsole.Prompt(
+                            new SelectionPrompt<RconLibrary>()
+                                .Title("Select RCON library")
+                                .AddChoices(RconLibrary.CoreRcon, RconLibrary.RconSharp));
+                        if (engine == rconLibrary)
+                        {
+                            continue;
+                        }
+
+                        rconLibrary = engine;
+                        rcon = await profile.CreateConnection(timeout, multiPacket, rconLibrary);
+
+                        AnsiConsole.WriteLine();
+
                         continue;
                     default:
                         AnsiConsole.Console.MarkupLineWithTime("Unknown shell command.");
@@ -68,20 +95,20 @@ public static class RconUtils
                 }
             }
 
-            await ExecuteCommand(rcon, command, timeout);
+            await ExecuteCommand(rcon, command);
         }
     }
 
-    public static async Task RunSingleShot(Profile profile, string command, uint timeout)
+    public static async Task RunSingleShot(Profile profile, string command, uint timeout, bool isMultiPacketResponse = false)
     {
-        var rcon = await profile.CreateConnection();
+        var rcon = await profile.CreateConnection(timeout, isMultiPacketResponse);
 
-        await ExecuteCommand(rcon, command, timeout);
+        await ExecuteCommand(rcon, command);
 
         rcon.Dispose();
     }
 
-    private static async Task ExecuteCommand(RconConnection connection, string command, uint timeout)
+    private static async Task ExecuteCommand(IRconConnection connection, string command)
     {
         AnsiConsole.WriteLine();
 
@@ -91,7 +118,7 @@ public static class RconUtils
 
         try
         {
-            var result = await connection.SendCommand(command, timeout);
+            var result = await connection.SendCommandAsync(command);
             AnsiConsole.Console.MarkupLineWithTime(
                 "[green][[Server]] [/]{1}",
                 result.EscapeMarkup());
@@ -121,7 +148,11 @@ public static class RconUtils
         AnsiConsole.WriteLine();
     }
 
-    private static async Task<RconConnection> CreateConnection(this Profile profile)
+    private static async Task<IRconConnection> CreateConnection(
+        this Profile profile,
+        uint timeout = 10,
+        bool isMultiPacketResponse = false,
+        RconLibrary? rconLibrary = null)
     {
         IPAddress ip;
 
@@ -150,7 +181,18 @@ public static class RconUtils
                 ip.ToString().EscapeMarkup());
         }
 
-        return new RconConnection(ip, profile.Port, profile.Password);
+        var library = rconLibrary ?? profile.Library;
+
+        AnsiConsole.Console.MarkupLineWithTime(
+            "Connecting using [bold]'{1}'[/] library.",
+            library.ToString().EscapeMarkup());
+
+        return library switch
+        {
+            RconLibrary.RconSharp => new RconSharpConnection(ip, profile.Port, profile.Password, timeout, isMultiPacketResponse),
+            RconLibrary.CoreRcon => new CoreRconConnection(ip, profile.Port, profile.Password, timeout, isMultiPacketResponse),
+            _ => throw new ArgumentOutOfRangeException(nameof(rconLibrary), rconLibrary, null)
+        };
     }
 
     private static void PrintHelp()
@@ -160,7 +202,9 @@ public static class RconUtils
             { "[bold]::exit[/]", "Exit the RCON shell." },
             { "[bold]::info[/]", "Show connection information" },
             { "[bold]::help[/]", "Print this help message" },
-            { "[bold]::timeout[/]", "Set the command timeout in seconds. (Default is 10)" }
+            { "[bold]::timeout[/]", "Set the command timeout in seconds. (Default is 10)" },
+            { "[bold]::multipacket[/]", "Enable or disable Multi-Packet response. (Default is disabled)" },
+            { "[bold]::engine[/]", "Change the RCON library." }
         };
 
         AnsiConsole.Console.PrintDictionary(
@@ -186,7 +230,7 @@ public static class RconUtils
         AnsiConsole.WriteLine();
     }
 
-    private static void PrintInfoTable(Profile profile, uint timeout)
+    private static void PrintInfoTable(Profile profile, uint timeout, bool multiPacket, RconLibrary library)
     {
         var infos = new Dictionary<string, string>
         {
@@ -194,7 +238,9 @@ public static class RconUtils
             { "Description", profile.Description },
             { "Host", profile.Host },
             { "Port", profile.Port.ToString(CultureInfo.InvariantCulture) },
-            { "Timeout", timeout.ToString(CultureInfo.InvariantCulture) }
+            { "Timeout", timeout.ToString(CultureInfo.InvariantCulture) },
+            { "Multi-Packet", multiPacket.ToString() },
+            { "Library", library.ToString() }
         };
 
         AnsiConsole.Console.PrintDictionary("RCON connection info", infos);

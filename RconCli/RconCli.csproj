@@ -27,6 +27,7 @@
     <PackageReference Include="Cocona.Lite" />
     <PackageReference Include="CoreRCON" />
     <PackageReference Include="OneOf" />
+    <PackageReference Include="RconSharp" />
     <PackageReference Include="Spectre.Console" />
   </ItemGroup>
 
