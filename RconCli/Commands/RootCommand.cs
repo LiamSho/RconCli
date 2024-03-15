@@ -80,7 +80,7 @@ public class RootCommand
         }
     }
 
-    [Command("info", Description = "Display RCON CLI info.")]
+    [Command("info", Aliases = ["i"], Description = "Display RCON CLI info. (alias: i)")]
     public void InfoAsync()
     {
         AnsiConsole.Console.PrintFiglet();
