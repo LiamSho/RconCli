@@ -27,6 +27,8 @@ public static class RconUtils
         AnsiConsole.Console.MarkupLineWithTime("RCON client created.");
         AnsiConsole.WriteLine();
 
+        var commandHistory = new Dictionary<DateTimeOffset, string>();
+
         while (true)
         {
             var command = AnsiConsole.Prompt(new TextPrompt<string>("[blue][[Command]] [/]"));
@@ -88,6 +90,21 @@ public static class RconUtils
                         AnsiConsole.WriteLine();
 
                         continue;
+                    case "::history":
+                        var history = AnsiConsole.Prompt(
+                            new SelectionPrompt<string>()
+                                .Title("Command History")
+                                .AddChoices("::Exit Selection")
+                                .AddChoices(commandHistory.FormatHistory())
+                                .PageSize(10)
+                                .MoreChoicesText("Show more ..."));
+                        if (history == "::Exit Selection")
+                        {
+                            continue;
+                        }
+
+                        command = history[23..];
+                        break;
                     default:
                         AnsiConsole.Console.MarkupLineWithTime("Unknown shell command.");
                         AnsiConsole.WriteLine();
@@ -95,6 +112,7 @@ public static class RconUtils
                 }
             }
 
+            commandHistory.Add(DateTimeOffset.UtcNow, command);
             await ExecuteCommand(rcon, command);
         }
     }
@@ -204,7 +222,8 @@ public static class RconUtils
             { "[bold]::help[/]", "Print this help message" },
             { "[bold]::timeout[/]", "Set the command timeout in seconds. (Default is 10)" },
             { "[bold]::multipacket[/]", "Enable or disable Multi-Packet response. (Default is disabled)" },
-            { "[bold]::engine[/]", "Change the RCON library." }
+            { "[bold]::engine[/]", "Change the RCON library." },
+            { "[bold]::history[/]", "Show command history of current session" }
         };
 
         AnsiConsole.Console.PrintDictionary(
@@ -246,5 +265,12 @@ public static class RconUtils
         AnsiConsole.Console.PrintDictionary("RCON connection info", infos);
 
         AnsiConsole.WriteLine();
+    }
+
+    private static IEnumerable<string> FormatHistory(this Dictionary<DateTimeOffset, string> history)
+    {
+        return history
+            .OrderByDescending(x => x.Key)
+            .Select(x => $"[green][[{x.Key.LocalDateTime:HH:mm:ss}]][/] {x.Value}");
     }
 }
