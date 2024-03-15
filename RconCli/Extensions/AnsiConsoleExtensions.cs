@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
+using RconCli.Models;
 using Spectre.Console;
 using Profile = RconCli.Configuration.Profile;
 
@@ -59,6 +60,11 @@ public static class AnsiConsoleExtensions
         console.PrintDictionary("Profile Detail", dictionary);
     }
 
+    public static void Print(this IAnsiConsole console, PrintableTable table)
+    {
+        table.Print(console);
+    }
+
     public static void PrintDictionary(this IAnsiConsole console, string title, IDictionary<string, string> dictionary)
     {
         console.PrintDictionary(title, "Property", "Value", dictionary);
@@ -66,18 +72,10 @@ public static class AnsiConsoleExtensions
 
     public static void PrintDictionary(this IAnsiConsole console, string title, string keyTitle, string valueTitle, IDictionary<string, string> dictionary)
     {
-        var table = new Table();
-
-        table.AddColumns(keyTitle, valueTitle);
-
-        foreach (var (key, value) in dictionary)
-        {
-            table.AddRow(key, value);
-        }
-
-        table.Title = new TableTitle(title, new Style(Color.Black));
-
-        console.Write(table);
+        var pt = new PrintableTable(title);
+        pt.Columns.AddRange([keyTitle, valueTitle]);
+        pt.Rows.AddRange(dictionary.Select(x => new[] { x.Key, x.Value }));
+        pt.Print(console);
     }
 
     public static void PrintProfiles(this IAnsiConsole console, IEnumerable<Profile> profiles, bool includePassword = false)

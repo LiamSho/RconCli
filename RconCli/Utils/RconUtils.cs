@@ -5,6 +5,7 @@ using RconCli.Abstract;
 using RconCli.Enums;
 using RconCli.Exceptions;
 using RconCli.Extensions;
+using RconCli.Models;
 using RconCli.Services;
 using Spectre.Console;
 using Profile = RconCli.Configuration.Profile;
@@ -51,30 +52,30 @@ public static class RconUtils
 
                 switch (command)
                 {
-                    case "::exit":
+                    case "::exit" or "::e":
                         rcon.Dispose();
                         AnsiConsole.Console.MarkupLineWithTime("RCON client disposed.");
                         AnsiConsole.WriteLine();
                         return;
-                    case "::info":
+                    case "::info" or "::i":
                         PrintInfoTable(profile, timeout, multiPacket, rconLibrary);
                         continue;
-                    case "::help":
+                    case "::help" or "::h":
                         PrintHelp();
                         continue;
-                    case "::timeout":
+                    case "::timeout" or "::t":
                         var seconds = AnsiConsole.Ask("Enter timeout in seconds: ", timeout);
                         timeout = seconds;
                         await rcon.SetTimeout(timeout);
                         AnsiConsole.WriteLine();
                         continue;
-                    case "::multipacket":
+                    case "::multipacket" or "::m":
                         var isMultiPacket = AnsiConsole.Ask("Enable Multi-Packet response?", isMultiPacketResponse);
                         multiPacket = isMultiPacket;
                         await rcon.SetMultiPacketResponse(multiPacket);
                         AnsiConsole.WriteLine();
                         continue;
-                    case "::engine":
+                    case "::engine" or "::g":
                         var engine = AnsiConsole.Prompt(
                             new SelectionPrompt<RconLibrary>()
                                 .Title("Select RCON library")
@@ -90,7 +91,7 @@ public static class RconUtils
                         AnsiConsole.WriteLine();
 
                         continue;
-                    case "::history":
+                    case "::history" or "::c":
                         var history = AnsiConsole.Prompt(
                             new SelectionPrompt<string>()
                                 .Title("Command History")
@@ -215,22 +216,19 @@ public static class RconUtils
 
     private static void PrintHelp()
     {
-        var commands = new Dictionary<string, string>
-        {
-            { "[bold]::exit[/]", "Exit the RCON shell." },
-            { "[bold]::info[/]", "Show connection information" },
-            { "[bold]::help[/]", "Print this help message" },
-            { "[bold]::timeout[/]", "Set the command timeout in seconds. (Default is 10)" },
-            { "[bold]::multipacket[/]", "Enable or disable Multi-Packet response. (Default is disabled)" },
-            { "[bold]::engine[/]", "Change the RCON library." },
-            { "[bold]::history[/]", "Show command history of current session" }
-        };
+        var pt = new PrintableTable("RCON CLI shell mode commands");
+        pt.Columns.AddRange(["Command", "Alias", "Description"]);
+        pt.Rows.AddRange([
+            ["[bold]::exit[/]", "[bold]::e[/]", "Exit the RCON shell."],
+            ["[bold]::info[/]", "[bold]::i[/]", "Show connection information"],
+            ["[bold]::help[/]", "[bold]::h[/]", "Print this help message"],
+            ["[bold]::timeout[/]", "[bold]::t[/]", "Set the command timeout in seconds. (Default is 10)"],
+            ["[bold]::multipacket[/]", "[bold]::m[/]", "Enable or disable Multi-Packet response. (Default is disabled)"],
+            ["[bold]::engine[/]", "[bold]::g[/]", "Change the RCON library."],
+            ["[bold]::history[/]", "[bold]::c[/]", "Show command history of current session"]
+        ]);
 
-        AnsiConsole.Console.PrintDictionary(
-            "RCON CLI shell mode commands",
-            "Command",
-            "Description",
-            commands);
+        AnsiConsole.Console.Print(pt);
 
         AnsiConsole.MarkupLine("If your RCON command conflicts with a shell command, prefix it with [bold]'$'[/].");
         AnsiConsole.MarkupLine("  > [bold]'::exit'[/] will be interpreted as a shell command [bold]'::exit'[/] and be executed.");
