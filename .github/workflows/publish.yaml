@@ -28,10 +28,10 @@ jobs:
         run: dotnet restore
 
       - name: "Build"
-        run: dotnet build -c Release --no-restore
+        run: dotnet build -c Release -p:Version=${{ github.event.release.tag_name }} --no-restore
 
       - name: "Pack"
-        run: dotnet pack -c Release --no-build -p:PackageVersion=${{ github.event.release.tag_name }} ./RconCli/RconCli.csproj
+        run: dotnet pack -c Release --no-build -p:Version=${{ github.event.release.tag_name }} ./RconCli/RconCli.csproj
 
       - name: "Publish"
         run: dotnet nuget push ./nupkg/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
