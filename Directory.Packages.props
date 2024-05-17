@@ -4,9 +4,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Cocona.Lite" Version="2.2.0" />
-    <PackageVersion Include="CoreRCON" Version="5.4.0" />
+    <PackageVersion Include="CoreRCON" Version="5.4.1" />
     <PackageVersion Include="RconSharp" Version="2.0.1" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="9.21.0.86780" />
-    <PackageVersion Include="Spectre.Console" Version="0.48.0" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="9.25.0.90414" />
+    <PackageVersion Include="Spectre.Console" Version="0.49.1" />
   </ItemGroup>
 </Project>
